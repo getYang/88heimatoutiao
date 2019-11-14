@@ -53,9 +53,16 @@ export default {
   },
   methods: {
     login () {
-      this.$ref.formObj.validate(function (isOK) {
+      this.$refs.formObj.validate((isOK) => {
         if (isOK) {
-          alert('1')
+          this.$axios({
+            url: '/authorizations',
+            data: this.loginForm,
+            method: 'post'
+          }).then(result => {
+            window.localStorage.setItem('user-token', result.data.data.token)
+            this.$router.push('/home')
+          })
         }
       })
     }
