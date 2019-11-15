@@ -7,7 +7,7 @@ import Login from '../views/login' // 简写路径
 // @ 是 VueCLI 中提供的一种特殊的路径规则，它直接指向 src 目录路径
 // 注意：在 VueCLI 创建的项目中，无论你在哪里使用 @ 符号，它永远指向 src
 import Home from '@/views/home'
-
+import NProgress from 'nprogress'
 Vue.use(VueRouter)
 
 const routes = [
@@ -41,7 +41,7 @@ export default router
 
 router.beforeEach((to, from, next) => {
   console.log('所有页面的访问都要经过这里')
-
+  NProgress.start()
   // 1. 如果访问的是登录页面，则直接放行
   if (to.path === '/login') {
     next()
@@ -62,4 +62,8 @@ router.beforeEach((to, from, next) => {
     // 2.3 没有，就跳转到登录页
     next('/login')
   }
+})
+
+router.afterEach((to, from) => {
+  NProgress.done()
 })
