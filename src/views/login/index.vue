@@ -7,11 +7,11 @@
         </div>
         <el-form ref="formObj" style="margin-top:35px" :model="loginForm" :rules="loginRules">
           <el-form-item prop="mobile">
-              <el-input v-model="loginForm.mobile" placeholder="请输入您的手机号">
+              <el-input v-model="loginForm.mobile" placeholder="请输入您的手机号" maxlength=11>
               </el-input>
           </el-form-item >
           <el-form-item prop="code">
-              <el-input v-model="loginForm.code" style="width:250px" placeholder="请输入验证码"></el-input>
+              <el-input v-model="loginForm.code" style="width:250px" placeholder="请输入验证码" maxlength=8></el-input>
               <el-button type="primary" plain style="float:right">获取验证码</el-button>
           </el-form-item>
           <el-form-item prop="checked">
@@ -32,9 +32,9 @@ export default {
   data () {
     return {
       loginForm: {
-        mobile: '',
+        mobile: '18714663635',
         code: '',
-        checked: false
+        checked: true
       },
       loginRules: {
         mobile: [{ required: true, message: '请输入正确的手机号码' },
