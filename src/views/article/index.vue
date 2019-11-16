@@ -131,8 +131,8 @@
         <el-table-column
           prop="address"
           label="操作">
-          <template>
-            <el-button type="danger">删除</el-button>
+          <template slot-scope="scope">
+            <el-button type="danger" @click="onDelete(scope.row.id)">删除</el-button>
             <el-button type="primary">编辑</el-button>
           </template>
         </el-table-column>
@@ -198,7 +198,8 @@ export default {
       ],
       totalCount: 0, // 总记录数
       loading: true, // 表格的 loading 状态
-      channels: [] // 频道列表
+      channels: [], // 频道列表
+      page: 1 // 当前页码
     }
   },
   created () {
@@ -250,6 +251,8 @@ export default {
       })
     },
     onPageChange (page) {
+      // 记录当前最新页码
+      this.page = page
       // 请求加载指定页码的文章列表
       this.loadArticles(page)
     },
@@ -263,6 +266,26 @@ export default {
         this.channels = res.data.data.channels
       }).catch(err => {
         console.log(err, '获取数据失败')
+      })
+    },
+    onDelete (articleId) {
+      // 这里报 400 错，是因为数据 id 的问题
+      // 这个数据 id 不对
+      this.$axios({
+        method: 'DELETE',
+        // /mp/v1_0/articles/:target
+        // 注意：接口路径中的 :target 是一个路径参数，:target 是动态的，例如1、2、3，不要写 :
+        url: `/articles/${articleId}`, // 任何数据和字符串相加都会自动 toString
+        headers: {
+          // 接口中说明的 Content-Type application/json 不需要传递
+          // 因为 axios 会自动添加发送 Content-Type application/json
+          Authorization: `Bearer ${window.localStorage.getItem('user-token')}`
+        }
+      }).then(res => {
+        // 删除成功，重新加载当前页码文章列表
+        this.loadArticles(this.page)
+      }).catch(err => {
+        console.log(err, '删除失败')
       })
     }
   }
