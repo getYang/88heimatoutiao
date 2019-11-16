@@ -7,18 +7,31 @@
       </div>
       <el-form ref="form" label-width="80px">
         <el-form-item label="文章状态">
+          <!--
+            单选框组会把选中的 radio 的 label 同步给绑定的数据
+           -->
           <el-radio-group v-model="filterForm.status">
-            <el-radio label="全部"></el-radio>
-            <el-radio label="草稿"></el-radio>
-            <el-radio label="待审核"></el-radio>
-            <el-radio label="审核通过"></el-radio>
-            <el-radio label="审核失败"></el-radio>
+            <!-- 接口要求，不传为全部 -->
+            <el-radio :label="null">全部</el-radio>
+            <el-radio label="0">草稿</el-radio>
+            <el-radio label="1">待审核</el-radio>
+            <el-radio label="2">审核通过</el-radio>
+            <el-radio label="3">审核失败</el-radio>
+            <el-radio label="4">已删除</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="频道列表">
-          <el-select placeholder="请选择活动区域" v-model="filterForm.channel_id">
-            <el-option label="区域一" value="shanghai"></el-option>
-            <el-option label="区域二" value="beijing"></el-option>
+          <!--
+            下拉列表会把选中的 option 的 value 同步到数据中
+           -->
+          <el-select placeholder="请选择频道" v-model="filterForm.channel_id">
+            <el-option label="所有频道" :value="null"></el-option>
+            <el-option
+              :label="channel.name"
+              :value="channel.id"
+              v-for="channel in channels"
+              :key="channel.id"
+            ></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="时间选择">
@@ -27,11 +40,13 @@
             type="daterange"
             range-separator="至"
             start-placeholder="开始日期"
-            end-placeholder="结束日期">
+            end-placeholder="结束日期"
+            value-format="yyyy-MM-dd">
           </el-date-picker>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary">查询</el-button>
+          <!-- 点击查询按钮：重新发请求获取筛选数据，新查询的数据肯定从第 1 页开始 -->
+          <el-button type="primary" @click="loadArticles(1)">查询</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -58,7 +73,7 @@
        -->
       <el-table
         :data="articles"
-        style="width: 90%"
+        style="width: 100%"
         v-loading="loading">
         <el-table-column
           prop="date"
@@ -71,13 +86,13 @@
             注意：只有当你需要在自定义表格列模板中访问遍历项的时候才这么做
            -->
           <template slot-scope="scope">
-            <img width="200" :src="scope.row.cover.images[0]">
+            <img width="50" :src="scope.row.cover.images[0]">
           </template>
         </el-table-column>
         <el-table-column
           prop="title"
           label="标题"
-          width="500">
+          width="180">
         </el-table-column>
         <el-table-column
           prop="status"
@@ -152,12 +167,12 @@ export default {
     return {
       // 过滤数据的表单
       filterForm: {
-        status: '',
-        channel_id: '',
-        begin_pubdate: '',
-        end_pubdate: ''
+        status: null,
+        channel_id: null
+        // begin_pubdate: '',
+        // end_pubdate: ''
       },
-      rangeDate: '',
+      rangeDate: [], // 日期范围（开始时间，结束时间）
       articles: [], // 文章数据列表
       articleStatus: [
         {
@@ -182,12 +197,15 @@ export default {
         }
       ],
       totalCount: 0, // 总记录数
-      loading: true // 表格的 loading 状态
+      loading: true, // 表格的 loading 状态
+      channels: [] // 频道列表
     }
   },
   created () {
     // 初始化的时候加载第 1 页数据
     this.loadArticles(1)
+    // 加载频道列表
+    this.loadChannels()
   },
   methods: {
     // 如果 page 就使用传递的，如果没传，默认就是 1
@@ -211,7 +229,13 @@ export default {
         // Query 参数使用 params 传递
         params: {
           page, // 页码
-          per_page: 10 // 每页大小，后端按照默认 10 条每页
+          per_page: 10, // 每页大小，后端按照默认 10 条每页
+          // axios 有个功能，当参数值为 null、undefined 的时候，它就不发送了
+          // status: null // 文章状态
+          status: this.filterForm.status, // 文章状态
+          channel_id: this.filterForm.channel_id, // 频道id，不传就是所有
+          begin_pubdate: this.rangeDate ? this.rangeDate[0] : null, // 开始时间
+          end_pubdate: this.rangeDate ? this.rangeDate[1] : null // 结束时间
         }
       }).then(res => { // 成功执行这里
         // 更新文章列表数组
@@ -228,6 +252,18 @@ export default {
     onPageChange (page) {
       // 请求加载指定页码的文章列表
       this.loadArticles(page)
+    },
+    loadChannels () {
+      // 有些接口需要 token，有些接口不需要 token
+      // 是否需要，应该由接口文档指示
+      this.$axios({
+        method: 'GET',
+        url: '/channels'
+      }).then(res => {
+        this.channels = res.data.data.channels
+      }).catch(err => {
+        console.log(err, '获取数据失败')
+      })
     }
   }
 }
