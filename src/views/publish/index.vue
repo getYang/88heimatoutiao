@@ -82,7 +82,13 @@ export default {
   components: {
     // 注册局部组件
     quillEditor,
+    // 使用的时候，可以：
+    //  <ChannelSelect></ChannelSelect>
+    //  也可以：<channel-select></channel-select>
+    // 在使用的时候我个人更喜欢小写
+    // 但是注册时候，更推荐大写
     ChannelSelect
+    // 'channel-select': ChannelSelect
   },
   data () {
     return {
@@ -101,9 +107,31 @@ export default {
   },
   created () {
     // this.loadChannels()
+    // 添加和编辑使用的都是这个组件
+    // 只有编辑才需要在初始化的时候，根据id获取加载文章的内容
+    if (this.$route.params.articleId) {
+      this.loadArticle()
+    }
   },
   methods: {
+    loadArticle () {
+      this.$axios({
+        method: 'GET',
+        url: `/articles/${this.$route.params.articleId}`
+      }).then(res => {
+        this.article = res.data.data
+      })
+    },
     onSubmit (draft) {
+      if (this.$route.params.articleId) {
+        // 请求编辑文章
+        this.updateArticle(draft)
+      } else {
+        // 请求添加文章
+        this.addArticle(draft)
+      }
+    },
+    addArticle (draft) {
       this.$axios({
         method: 'POST',
         url: '/articles',
@@ -121,6 +149,24 @@ export default {
         console.log(res)
       }).catch(err => {
         console.log(err, '保存失败')
+      })
+    },
+    updateArticle (draft) {
+      this.$axios({
+        method: 'PUT',
+        url: `/articles/${this.$route.params.articleId}`,
+        params: {
+          draft
+        },
+        data: this.article
+      }).then(res => {
+        this.$message({
+          type: 'success',
+          message: '更新成功'
+        })
+      }).catch(err => {
+        console.log(err)
+        this.$message.error('更新失败')
       })
     }
     // loadChannels () {
