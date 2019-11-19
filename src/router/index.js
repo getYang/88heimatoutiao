@@ -14,6 +14,8 @@ import Comment from '@/views/comment'
 // 加载 nprogress
 import NProgress from 'nprogress'
 
+import CommentDetail from '@/views/comment-detail'
+
 Vue.use(VueRouter)
 
 const routes = [
@@ -49,7 +51,15 @@ const routes = [
       {
         path: '/comment',
         component: Comment
+      },
+      {
+        path: '/comment/:articleId',
+        component: CommentDetail,
+        // 将路由参数映射给组件的 prosp 数据，这样获取参数更方便
+        // 参考文档：https://router.vuejs.org/zh/guide/essentials/passing-props.html
+        props: true
       }
+
     ]
   },
   {
