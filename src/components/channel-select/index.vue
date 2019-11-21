@@ -24,6 +24,11 @@
       :value="value"
      @input="$emit('input', $event)"
     >
+    <el-option
+        v-if="includeAll"
+        :value="null"
+        label="全部频道"
+      ></el-option>
       <el-option
         :label="channel.name"
         :value="channel.id"
@@ -42,6 +47,10 @@ export default {
     value: {
       type: [String, Number],
       require: true
+    },
+    includeAll: {
+      type: Boolean,
+      default: true
     }
   },
   data () {
