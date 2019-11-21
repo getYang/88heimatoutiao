@@ -54,7 +54,8 @@
             <img
               :src="item.url"
               class="image"
-              height="200"
+              height="250"
+
             />
             <div style="padding: 14px;" class="action">
               <!-- class 还支持对象语法， -->

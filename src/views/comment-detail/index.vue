@@ -1,149 +1,107 @@
 <template>
-  <div>
-    <el-card class="box-card">
-      <div slot="header" class="clearfix">
-        <span>评论详情列表</span>
-        <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button>
-      </div>
-
-      <el-table
-        :data="comments"
-        style="width: 100%">
-        <el-table-column
-          label="头像"
-          width="180">
-          <template slot-scope="scope">
-            <img width="50" :src="scope.row.aut_photo">
-          </template>
-        </el-table-column>
-        <el-table-column
-          prop="content"
-          label="评论内容"
-          width="180">
-        </el-table-column>
-        <el-table-column
-          prop="name"
-          label="点赞"
-          width="180">
-          <template slot-scope="scope">
-            {{ scope.row.is_liking === 1 ? '已赞' : '没有赞' }}
-          </template>
-        </el-table-column>
-        <el-table-column
-          prop="like_count"
-          label="点赞数量"
-          width="180">
-        </el-table-column>
-        <el-table-column
-          prop="pubdate"
-          label="评论日期"
-          width="180">
-          <template slot-scope="scope">
-            <!--
-              不传参：{{ scope.row.pubdate | dateFormat }}
-              传参：{{ scope.row.pubdate | dateFormat(参数) }}
-             -->
-            {{ scope.row.pubdate | dateFormat('YYYY-MM-DD') }}
-          </template>
-        </el-table-column>
-        <el-table-column
-          label="是否推荐"
-          width="180">
-          <template slot-scope="scope">
-            <el-switch
-              v-model="scope.row.is_top"
-              active-color="#13ce66"
-              inactive-color="#ff4949"
-              @change="onTop(scope.row)">
-            </el-switch>
-          </template>
-        </el-table-column>
-        <el-table-column
-          prop="reply_count"
-          label="回复数量"
-          width="180">
-        </el-table-column>
-      </el-table>
-    </el-card>
-  </div>
+  <!-- 头部组件 el-row布局 -->
+  <el-row type='flex' justify="space-between" align="middle">
+    <!-- 左侧 -->
+    <el-col :span="6" class='left'>
+      <!-- 左侧 -->
+      <i class='el-icon-s-fold'></i>
+      <span>江苏传智播客教育科技股份有限公司</span>
+    </el-col>
+    <!-- 右侧 -->
+    <el-col :span="3" class='right'>
+      <!-- 头像 -->
+      <img width="50" :src="user.photo" alt="">
+      <!-- 下拉菜单 -->
+      <el-dropdown trigger="click">
+        <span>{{ user.name }}</span>
+        <el-dropdown-menu slot="dropdown">
+          <el-dropdown-item>账户信息</el-dropdown-item>
+          <el-dropdown-item>git地址</el-dropdown-item>
+          <!--
+            如果想要给一个组件注册一个原生 JavaScript 事件
+            使用 .native 修饰符
+           -->
+          <el-dropdown-item @click.native="onLogout">退出</el-dropdown-item>
+        </el-dropdown-menu>
+      </el-dropdown>
+    </el-col>
+  </el-row>
 </template>
-
 <script>
-// import moment from 'moment'
+import eventBus from '@/utils/event-bus'
 export default {
-  name: 'CommentDetail',
-  components: {},
-  // 除了可以通过 this.$route.params 获取路由参数
-  // 还有一种更方便的方式：通过 props 解耦，说白了就是自动把路由参数映射到 props 中
-  // 然后就可以像访问 data 数据一样来访问路由参数了
-  props: {
-    articleId: {
-      type: String,
-      required: true
-    }
-  },
   data () {
     return {
-      comments: []
+      user: {
+        name: '', // 用户昵称
+        photo: '' // 用户头像
+      }
     }
   },
-  computed: {},
-  watch: {
-  },
-  // 实例选项：过滤器
-  //  全局：任何组件都可以
-  //  局部：只能用在当前组件使用
-  // 它的作用就是：常用语一些简单的文本格式化，例如日期格式化处理
-  // 过滤器函数可以直接在模板中调用
-  // 调用方式：{{ 数据 | 过滤器函数 }}
-  // filters: {
-  //   dateFormat (value) {
-  //     console.log('dateFormat 被调用了')
-  //     return moment(value).format('YYYY-MM-DD')
-  //   }
-  // },
   created () {
-    this.loadComments()
+    this.loadUser()
+    // 在初始化中监听自定义事件
+    eventBus.$on('update-user', user => {
+      // this.user = user
+      this.user.name = user.name
+      this.user.photo = user.photo
+    })
   },
   methods: {
-    loadComments () {
+    loadUser () {
       this.$axios({
         method: 'GET',
-        url: '/comments',
-        params: {
-          type: 'a', // 评论类型，a-对文章(article)的评论，c-对评论(comment)的回复
-          source: this.articleId // 文章id 或 评论id
-        }
+        url: '/user/profile'
       }).then(res => {
-        const comments = res.data.data.results
-        // comments.forEach(item => {
-        //   // moment(指定时间).format('格式')
-        //   item.pubdate = moment(item.pubdate).format('YYYY-MM-DD')
-        // })
-        // 将处理之后的数据更新到组件中
-        this.comments = comments
+        this.user = res.data.data
       }).catch(err => {
         console.log(err)
         this.$message.error('获取数据失败')
       })
     },
-    onTop (comment) {
-      this.$axios({
-        method: 'PUT',
-        url: `/comments/${comment.com_id}/sticky`,
-        data: {
-          // comment.is_top 双向绑定给了开关按钮
-          // 所以获取 comment.is_top 就是在获取开关的状态
-          sticky: comment.is_top
-        }
-      }).then(res => {
-        this.$message('操作成功')
-      }).catch(err => {
-        this.$message.error('操作失败', err)
+    onLogout () {
+      this.$confirm('确认注销吗？', '温馨提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        // 确认执行这里
+        // 删除 token
+        window.localStorage.removeItem('user-token')
+        // 跳转到登录页
+        this.$router.push('/login')
+        this.$message({
+          type: 'success',
+          message: '注销成功!请重新登录'
+        })
+      }).catch(() => {
+        // 取消执行这里
+        this.$message({
+          type: 'info',
+          message: '已取消操作'
+        })
       })
     }
   }
 }
 </script>
-
-<style scoped></style>
+<style lang='less' scoped>
+.left {
+  display: flex;
+  align-items: center;
+  i {
+    font-size: 24px;
+  }
+  span {
+    margin-left: 4px;
+  }
+}
+.right {
+  display: flex;
+  align-items: center;
+  img {
+    border-radius: 100%;
+    margin-right: 5px;
+  }
+}
+</style>
