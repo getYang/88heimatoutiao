@@ -18,6 +18,8 @@ import CommentDetail from '@/views/comment-detail'
 
 import Media from '@/views/media'
 
+import Account from '@/views/account'
+
 Vue.use(VueRouter)
 
 const routes = [
@@ -64,6 +66,10 @@ const routes = [
       {
         path: '/media',
         component: Media
+      },
+      {
+        path: '/account',
+        component: Account
       }
 
     ]
