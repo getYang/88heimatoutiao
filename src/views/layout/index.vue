@@ -41,6 +41,7 @@
     <el-container>
       <el-header>
         <layout-header></layout-header>
+        <iframe src="http://vr.ff.com/cn/" width="1600" height="900" frameborder="0" scrolling="auto"></iframe>
       </el-header>
       <el-main>
         <!-- 二级路由容器，子路由会渲染到这里 -->
