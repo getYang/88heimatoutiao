@@ -47,7 +47,7 @@
         </el-form-item>
         <el-form-item>
           <!-- 点击查询按钮：重新发请求获取筛选数据，新查询的数据肯定从第 1 页开始 -->
-          <el-button type="primary" @click="loadArticles(1)">查询</el-button>
+          <el-button type="primary" @click="onQuery">查询</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -154,7 +154,8 @@
       layout="prev, pager, next"
       :total="totalCount"
       @current-change="onPageChange"
-      :disabled="loading">
+      :disabled="loading"
+      :current-page="page">
     </el-pagination>
     <!-- /分页 -->
   </div>
@@ -297,6 +298,10 @@ export default {
       }).catch(err => {
         console.log(err, '删除失败')
       })
+    },
+    onQuery () {
+      this.loadArticles(1)
+      this.page = 1
     }
   }
 }
